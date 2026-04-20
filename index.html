@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NutriDay">
+<meta name="theme-color" content="#1a2e1a">
+<title>NutriDay – Daily Nutrition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1f0f;
+    --surface: #182818;
+    --surface2: #1f361f;
+    --border: #2a422a;
+    --accent: #7ec87e;
+    --accent2: #a8e6a8;
+    --accent-dim: #3a6b3a;
+    --text: #e8f5e8;
+    --text-dim: #8aaa8a;
+    --text-muted: #557055;
+    --danger: #e07070;
+    --warning: #e0c070;
+    --water: #5ab4e0;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  /* HEADER */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--accent2);
+    letter-spacing: -0.5px;
+  }
+  .date-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  .date-pill:active { opacity: 0.7; }
+
+  /* DAY SELECTOR */
+  .day-selector {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .day-selector::-webkit-scrollbar { display: none; }
+  .day-btn {
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .day-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0f1f0f;
+    font-weight: 600;
+  }
+  .day-btn:active { transform: scale(0.95); }
+
+  /* MAIN */
+  .main {
+    padding: 16px;
+    padding-bottom: 100px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 14px;
+  }
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header:active { opacity: 0.8; }
+  .section-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .meal-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .section-info { }
+  .section-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .section-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 1px;
+  }
+  .section-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .progress-dots {
+    display: flex;
+    gap: 3px;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .dot.filled { background: var(--accent); }
+  .chevron {
+    font-size: 11px;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+    margin-left: 4px;
+  }
+  .chevron.open { transform: rotate(180deg); }
+  .section-body {
+    border-top: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .section-body.collapsed { display: none; }
+
+  /* DINNER OPTIONS */
+  .dinner-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .dinner-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-bottom: 2px solid transparent;
+  }
+  .dinner-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .dinner-option { display: none; }
+  .dinner-option.active { display: block; }
+
+  /* CHECKBOX ITEMS */
+  .check-item {
+    display: flex;
+    align-items: center;
+    padding: 13px 16px;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+    user-select: none;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:active { background: var(--surface2); }
+  .check-item.done .item-label {
+    color: var(--text-muted);
+    text-decoration: line-through;
+  }
+  .checkbox {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 2px solid var(--border);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .check-item.done .checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .checkmark {
+    display: none;
+    font-size: 13px;
+    color: #0f1f0f;
+    font-weight: 700;
+  }
+  .check-item.done .checkmark { display: block; }
+  .item-label {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text);
+    transition: color 0.15s;
+  }
+
+  /* WATER CARD */
+  .water-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .water-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .water-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .water-icon {
+    width: 30px;
+    height: 30px;
+    background: rgba(90, 180, 224, 0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+  }
+  .water-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--water);
+  }
+  .water-goal {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .water-bar-wrap {
+    background: var(--surface2);
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .water-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #5ab4e0, #8dd4f0);
+    border-radius: 8px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+  .water-btns {
+    display: flex;
+    gap: 8px;
+  }
+  .water-btn {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--water);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .water-btn:active { background: rgba(90,180,224,0.2); transform: scale(0.97); }
+  .water-reset {
+    flex: 0;
+    padding: 10px 12px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* GOALS CARD */
+  .goals-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-title {
+    padding: 14px 16px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  /* WEEKLY */
+  .weekly-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .weekly-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .week-day {
+    text-align: center;
+  }
+  .week-day-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .week-day-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .week-day-dot.today {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .week-day-dot.good {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0f1f0f;
+  }
+  .week-day-dot.partial {
+    background: var(--accent-dim);
+    border-color: var(--accent-dim);
+    color: var(--accent2);
+  }
+  .free-meal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .free-meal-row:active { opacity: 0.8; }
+  .free-meal-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .free-meal-badge {
+    background: rgba(224,192,112,0.15);
+    color: var(--warning);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* RESET BTN */
+  .reset-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 13px;
+    color: var(--danger);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .reset-btn:active { background: rgba(224,112,112,0.1); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.45;
+    transition: opacity 0.15s;
+  }
+  .nav-btn.active { opacity: 1; }
+  .nav-icon { font-size: 20px; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .nav-btn:not(.active) .nav-label { color: var(--text-muted); }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* NOTIFICATION BANNER */
+  .notif-banner {
+    position: fixed;
+    top: 80px;
+    left: 16px;
+    right: 16px;
+    background: var(--accent);
+    color: #0f1f0f;
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(-120px);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .notif-banner.show { transform: translateY(0); }
+
+  /* COMPLETE badge */
+  .meal-complete-badge {
+    font-size: 11px;
+    background: rgba(126,200,126,0.15);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-weight: 600;
+  }
+
+  /* Confirm dialog */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 300;
+    align-items: flex-end;
+  }
+  .overlay.show { display: flex; }
+  .dialog {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px max(24px, env(safe-area-inset-bottom));
+    width: 100%;
+  }
+  .dialog h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .dialog p {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .dialog-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .dialog-btn {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    transition: opacity 0.15s;
+    border: none;
+  }
+  .dialog-btn:active { opacity: 0.8; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-cancel { background: var(--surface2); color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="notif-banner" id="notifBanner">
+  <span id="notifIcon">🍽️</span>
+  <span id="notifText">Hora do café da manhã!</span>
+</div>
+
+<header class="app-header">
+  <div class="header-top">
+    <div class="app-title">NutriDay</div>
+    <div class="date-pill" id="datePill">loading…</div>
+  </div>
+  <div class="day-selector" id="daySelector"></div>
+</header>
+
+<!-- MAIN VIEW: TODAY -->
+<div class="main view active" id="viewToday">
+
+  <!-- MEALS -->
+  <div class="section">
+    <div class="section-card" id="meal-breakfast">
+      <div class="section-header" onclick="toggleSection('breakfast')">
+        <div class="section-left">
+          <div class="meal-icon" style="background:rgba(224,192,112,0.15)">🌅</div>
+          <div class="section-info">
+            <div class="section-time">08:00</div>
+            <div class="section-name">Café da Manhã</div>
+          </div>
+        </div>
+        <div class="section-progress">
+          <div class="progress-dots" id="dots-breakfast"></div>
+          <span id="badge-breakfast"></span>
+          <span class="chevron" id="chev-breakfast">▼</span>
+        </div>
+      </div>
+      <div class="section-body" id="body-breakfast">
+        <div class="check-item" onclick="toggle('breakfast','Pão')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍞 Pão</span></div>
+        <div class="check-item" onclick="toggle('breakfast','Ovo')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🥚 Ovo</span></div>
+        <div class="check-item" onclick="toggle('breakfast','Queijo')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🧀 Queijo</span></div>
+        <div class="check-item" onclick="toggle('breakfast','Mamão')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍈 Mamão</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-card" id="meal-lunch">
+      <div class="section-header" onclick="toggleSection('lunch')">
+        <div class="section-left">
+          <div class="meal-icon" style="background:rgba(126,200,126,0.12)">🍽️</div>
+          <div class="section-info">
+            <div class="section-time">12:00</div>
+            <div class="section-name">Almoço</div>
+          </div>
+        </div>
+        <div class="section-progress">
+          <div class="progress-dots" id="dots-lunch"></div>
+          <span id="badge-lunch"></span>
+          <span class="chevron" id="chev-lunch">▼</span>
+        </div>
+      </div>
+      <div class="section-body collapsed" id="body-lunch">
+        <div class="check-item" onclick="toggle('lunch','Arroz')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍚 Arroz</span></div>
+        <div class="check-item" onclick="toggle('lunch','Feijão')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🫘 Feijão</span></div>
+        <div class="check-item" onclick="toggle('lunch','Frango')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍗 Frango</span></div>
+        <div class="check-item" onclick="toggle('lunch','Legumes')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🥦 Legumes</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-card" id="meal-snack">
+      <div class="section-header" onclick="toggleSection('snack')">
+        <div class="section-left">
+          <div class="meal-icon" style="background:rgba(224,150,80,0.15)">🍎</div>
+          <div class="section-info">
+            <div class="section-time">16:00</div>
+            <div class="section-name">Lanche da Tarde</div>
+          </div>
+        </div>
+        <div class="section-progress">
+          <div class="progress-dots" id="dots-snack"></div>
+          <span id="badge-snack"></span>
+          <span class="chevron" id="chev-snack">▼</span>
+        </div>
+      </div>
+      <div class="section-body collapsed" id="body-snack">
+        <div class="check-item" onclick="toggle('snack','Iogurte')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🫙 Iogurte</span></div>
+        <div class="check-item" onclick="toggle('snack','Mel')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍯 Mel</span></div>
+        <div class="check-item" onclick="toggle('snack','Fruta')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍌 Fruta</span></div>
+        <div class="check-item" onclick="toggle('snack','Aveia')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🌾 Aveia</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-card" id="meal-preworkout">
+      <div class="section-header" onclick="toggleSection('preworkout')">
+        <div class="section-left">
+          <div class="meal-icon" style="background:rgba(224,100,100,0.12)">💪</div>
+          <div class="section-info">
+            <div class="section-time">18:00</div>
+            <div class="section-name">Pré-treino</div>
+          </div>
+        </div>
+        <div class="section-progress">
+          <div class="progress-dots" id="dots-preworkout"></div>
+          <span id="badge-preworkout"></span>
+          <span class="chevron" id="chev-preworkout">▼</span>
+        </div>
+      </div>
+      <div class="section-body collapsed" id="body-preworkout">
+        <div class="check-item" onclick="toggle('preworkout','Banana')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍌 Banana</span></div>
+        <div class="check-item" onclick="toggle('preworkout','Mel')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍯 Mel</span></div>
+        <div class="check-item" onclick="toggle('preworkout','Leite em pó')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🥛 Leite em pó</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-card" id="meal-dinner">
+      <div class="section-header" onclick="toggleSection('dinner')">
+        <div class="section-left">
+          <div class="meal-icon" style="background:rgba(90,130,200,0.12)">🌙</div>
+          <div class="section-info">
+            <div class="section-time">20:30</div>
+            <div class="section-name">Jantar</div>
+          </div>
+        </div>
+        <div class="section-progress">
+          <div class="progress-dots" id="dots-dinner"></div>
+          <span id="badge-dinner"></span>
+          <span class="chevron" id="chev-dinner">▼</span>
+        </div>
+      </div>
+      <div class="section-body collapsed" id="body-dinner">
+        <div class="dinner-tabs">
+          <div class="dinner-tab active" onclick="switchDinner(0)" id="dtab0">🍚 Opção 1</div>
+          <div class="dinner-tab" onclick="switchDinner(1)" id="dtab1">🥪 Opção 2</div>
+        </div>
+        <div class="dinner-option active" id="dinner-opt0">
+          <div class="check-item" onclick="toggle('dinner','Arroz')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍚 Arroz</span></div>
+          <div class="check-item" onclick="toggle('dinner','Frango')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍗 Frango</span></div>
+          <div class="check-item" onclick="toggle('dinner','Legumes')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🥦 Legumes</span></div>
+        </div>
+        <div class="dinner-option" id="dinner-opt1">
+          <div class="check-item" onclick="toggle('dinner','Pão')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍞 Pão</span></div>
+          <div class="check-item" onclick="toggle('dinner','Frango_s')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍗 Frango</span></div>
+          <div class="check-item" onclick="toggle('dinner','Queijo')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🧀 Queijo</span></div>
+          <div class="check-item" onclick="toggle('dinner','Alface')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🥬 Alface</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WATER -->
+  <div class="section">
+    <div class="water-card">
+      <div class="water-header">
+        <div class="water-title">
+          <div class="water-icon">💧</div>
+          Água
+        </div>
+        <div>
+          <div class="water-amount" id="waterAmount">0 ml</div>
+          <div class="water-goal">meta: 3.000 ml</div>
+        </div>
+      </div>
+      <div class="water-bar-wrap"><div class="water-bar" id="waterBar"></div></div>
+      <div class="water-btns">
+        <div class="water-btn" onclick="addWater(250)">+ 250 ml</div>
+        <div class="water-btn" onclick="addWater(500)">+ 500 ml</div>
+        <div class="water-btn" onclick="addWater(1000)">+ 1 L</div>
+        <div class="water-btn water-reset" onclick="addWater(-250)">−</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY GOALS -->
+  <div class="section">
+    <div class="goals-card">
+      <div class="card-title" style="padding-bottom:4px">Metas do Dia</div>
+      <div class="check-item" onclick="toggleGoal('fruits3')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🍇 Comeu 3+ frutas</span></div>
+      <div class="check-item" onclick="toggleGoal('veggies')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">🥗 Comeu legumes/verduras</span></div>
+      <div class="check-item" onclick="toggleGoal('schedule')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">⏰ Seguiu os horários</span></div>
+      <div class="check-item" onclick="toggleGoal('mealprep')"><div class="checkbox"><span class="checkmark">✓</span></div><span class="item-label">📦 Fez meal prep</span></div>
+    </div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div class="section">
+    <div class="weekly-card">
+      <div class="weekly-title">Semana</div>
+      <div class="week-grid" id="weekGrid"></div>
+      <div class="free-meal-row" onclick="toggleGoal('freemeal')">
+        <div class="free-meal-label">
+          🍕 Refeição livre
+          <span class="free-meal-badge">1× semana</span>
+        </div>
+        <div class="checkbox" id="freemeal-cb"><span class="checkmark">✓</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESET -->
+  <div class="section">
+    <button class="reset-btn" onclick="showResetDialog()">🔄 Resetar o dia</button>
+  </div>
+
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="overlay" id="overlay" onclick="closeDialog()">
+  <div class="dialog" onclick="event.stopPropagation()">
+    <h3>Resetar o dia?</h3>
+    <p>Isso vai apagar todos os checkmarks e a água de hoje. Tem certeza?</p>
+    <div class="dialog-btns">
+      <button class="dialog-btn btn-danger" onclick="resetDay()">Sim, resetar</button>
+      <button class="dialog-btn btn-cancel" onclick="closeDialog()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-btn active" id="nav-today" onclick="switchNav('today')">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">Hoje</span>
+  </div>
+  <div class="nav-btn" id="nav-week" onclick="switchNav('week')">
+    <span class="nav-icon">📅</span>
+    <span class="nav-label">Semana</span>
+  </div>
+</div>
+
+<!-- WEEK VIEW (hidden) -->
+<div class="main view" id="viewWeek" style="display:none">
+  <div class="weekly-card" style="margin-bottom:14px">
+    <div class="weekly-title">Progresso da Semana</div>
+    <div class="week-grid" id="weekGrid2"></div>
+  </div>
+  <div id="weekDetails"></div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────
+const WATER_GOAL = 3000;
+const DAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MEALS = ['breakfast','lunch','snack','preworkout','dinner'];
+const MEAL_ITEMS = {
+  breakfast: ['Pão','Ovo','Queijo','Mamão'],
+  lunch: ['Arroz','Feijão','Frango','Legumes'],
+  snack: ['Iogurte','Mel','Fruta','Aveia'],
+  preworkout: ['Banana','Mel','Leite em pó'],
+  dinner: ['Arroz','Frango','Legumes'] // opt0 default
+};
+const DINNER_OPTS = [
+  ['Arroz','Frango','Legumes'],
+  ['Pão','Frango_s','Queijo','Alface']
+];
+
+let currentDayKey = getTodayKey();
+let state = {};
+
+function getTodayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function getWeekKeys() {
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun
+  const keys = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(today);
+    d.setDate(today.getDate() - dow + i);
+    keys.push(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
+  }
+  return keys;
+}
+
+function loadState(dayKey) {
+  try {
+    const raw = localStorage.getItem('nutriday_' + dayKey);
+    return raw ? JSON.parse(raw) : freshState();
+  } catch { return freshState(); }
+}
+
+function saveState() {
+  localStorage.setItem('nutriday_' + currentDayKey, JSON.stringify(state));
+}
+
+function freshState() {
+  return {
+    meals: { breakfast:{}, lunch:{}, snack:{}, preworkout:{}, dinner:{} },
+    water: 0,
+    goals: { fruits3:false, veggies:false, schedule:false, mealprep:false, freemeal:false },
+    dinnerOpt: 0
+  };
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+function init() {
+  state = loadState(currentDayKey);
+  renderHeader();
+  renderDaySelector();
+  renderAllMeals();
+  renderWater();
+  renderGoals();
+  renderWeekGrid('weekGrid');
+  scheduleReminders();
+}
+
+function renderHeader() {
+  const d = new Date();
+  document.getElementById('datePill').textContent =
+    d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'short'});
+}
+
+function renderDaySelector() {
+  const keys = getWeekKeys();
+  const today = getTodayKey();
+  const sel = document.getElementById('daySelector');
+  sel.innerHTML = '';
+  keys.forEach((k,i) => {
+    const btn = document.createElement('div');
+    btn.className = 'day-btn' + (k === currentDayKey ? ' active' : '');
+    const parts = k.split('-');
+    const d = new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+    btn.textContent = DAYS[d.getDay()] + ' ' + d.getDate();
+    btn.onclick = () => switchDay(k);
+    sel.appendChild(btn);
+  });
+  // scroll active into view
+  const active = sel.querySelector('.active');
+  if(active) setTimeout(()=>active.scrollIntoView({block:'nearest',inline:'center'}),50);
+}
+
+function switchDay(k) {
+  currentDayKey = k;
+  state = loadState(k);
+  renderDaySelector();
+  renderAllMeals();
+  renderWater();
+  renderGoals();
+  renderWeekGrid('weekGrid');
+}
+
+// ─── MEALS ────────────────────────────────────────────────────
+function renderAllMeals() {
+  MEALS.forEach(m => renderMeal(m));
+  renderDinnerOpt();
+}
+
+function renderMeal(meal) {
+  const items = meal === 'dinner'
+    ? DINNER_OPTS[state.dinnerOpt || 0]
+    : MEAL_ITEMS[meal];
+  const checked = Object.values(state.meals[meal] || {}).filter(Boolean).length;
+  const total = items.length;
+
+  // dots
+  const dotsEl = document.getElementById('dots-' + meal);
+  if(dotsEl) {
+    dotsEl.innerHTML = items.map((_,i) =>
+      `<div class="dot${i < checked ? ' filled' : ''}"></div>`
+    ).join('');
+  }
+  // badge
+  const badge = document.getElementById('badge-' + meal);
+  if(badge) {
+    badge.innerHTML = checked === total && total > 0
+      ? '<span class="meal-complete-badge">✓ Feito</span>' : '';
+  }
+  // check items in DOM
+  const body = document.getElementById('body-' + meal);
+  if(!body) return;
+  const allItems = body.querySelectorAll('.check-item');
+  allItems.forEach(el => {
+    const label = el.querySelector('.item-label').textContent.trim().split(' ').slice(1).join(' ');
+    // find key from onclick
+    const fn = el.getAttribute('onclick') || '';
+    const match = fn.match(/'([^']+)'/g);
+    if(!match || match.length < 2) return;
+    const key = match[1].replace(/'/g,'');
+    const done = !!(state.meals[meal] && state.meals[meal][key]);
+    el.classList.toggle('done', done);
+  });
+}
+
+function toggle(meal, item) {
+  if(!state.meals[meal]) state.meals[meal] = {};
+  state.meals[meal][item] = !state.meals[meal][item];
+  saveState();
+  renderMeal(meal);
+  // brief haptic
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+
+function toggleSection(meal) {
+  const body = document.getElementById('body-' + meal);
+  const chev = document.getElementById('chev-' + meal);
+  const collapsed = body.classList.toggle('collapsed');
+  chev.classList.toggle('open', !collapsed);
+}
+
+// ─── DINNER ───────────────────────────────────────────────────
+function renderDinnerOpt() {
+  const opt = state.dinnerOpt || 0;
+  document.getElementById('dtab0').classList.toggle('active', opt===0);
+  document.getElementById('dtab1').classList.toggle('active', opt===1);
+  document.getElementById('dinner-opt0').classList.toggle('active', opt===0);
+  document.getElementById('dinner-opt1').classList.toggle('active', opt===1);
+}
+
+function switchDinner(opt) {
+  state.dinnerOpt = opt;
+  state.meals.dinner = {};
+  saveState();
+  renderDinnerOpt();
+  renderMeal('dinner');
+}
+
+// ─── WATER ───────────────────────────────────────────────────
+function addWater(ml) {
+  state.water = Math.max(0, (state.water||0) + ml);
+  saveState();
+  renderWater();
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+
+function renderWater() {
+  const w = state.water || 0;
+  const pct = Math.min(100, (w/WATER_GOAL)*100);
+  document.getElementById('waterAmount').textContent = w >= 1000
+    ? (w/1000).toFixed(1).replace('.',',') + ' L'
+    : w + ' ml';
+  document.getElementById('waterBar').style.width = pct + '%';
+}
+
+// ─── GOALS ───────────────────────────────────────────────────
+function toggleGoal(g) {
+  state.goals[g] = !state.goals[g];
+  saveState();
+  renderGoals();
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+
+function renderGoals() {
+  const goalMap = { fruits3:0, veggies:1, schedule:2, mealprep:3 };
+  const goalsCard = document.querySelector('.goals-card');
+  if(goalsCard) {
+    const items = goalsCard.querySelectorAll('.check-item');
+    Object.entries(goalMap).forEach(([g,i]) => {
+      if(items[i]) items[i].classList.toggle('done', !!(state.goals && state.goals[g]));
+    });
+  }
+  // free meal
+  const fm = document.getElementById('freemeal-cb');
+  if(fm) {
+    const row = fm.closest('.free-meal-row');
+    if(row) row.classList.toggle('done', !!(state.goals && state.goals.freemeal));
+    fm.querySelector('.checkmark').style.display = state.goals?.freemeal ? 'block' : 'none';
+    if(state.goals?.freemeal) {
+      fm.style.background = 'var(--accent)';
+      fm.style.borderColor = 'var(--accent)';
+    } else {
+      fm.style.background = '';
+      fm.style.borderColor = '';
+    }
+  }
+}
+
+// ─── WEEK GRID ───────────────────────────────────────────────
+function renderWeekGrid(elId) {
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const keys = getWeekKeys();
+  const today = getTodayKey();
+  el.innerHTML = '';
+  keys.forEach(k => {
+    const parts = k.split('-');
+    const d = new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+    const s = loadState(k);
+    const score = getDayScore(s);
+    let cls = '';
+    if(k === today) cls = 'today';
+    if(score >= 0.8) cls = 'good';
+    else if(score >= 0.4) cls = 'partial';
+    const div = document.createElement('div');
+    div.className = 'week-day';
+    div.innerHTML = `<div class="week-day-name">${DAYS[d.getDay()]}</div>
+      <div class="week-day-dot ${cls}">${d.getDate()}</div>`;
+    el.appendChild(div);
+  });
+}
+
+function getDayScore(s) {
+  if(!s) return 0;
+  let total = 0, done = 0;
+  MEALS.forEach(m => {
+    const items = m === 'dinner' ? DINNER_OPTS[s.dinnerOpt||0] : MEAL_ITEMS[m];
+    total += items.length;
+    done += Object.values(s.meals?.[m]||{}).filter(Boolean).length;
+  });
+  const waterOk = (s.water||0) >= WATER_GOAL ? 1 : 0;
+  return total > 0 ? ((done/total)*0.8 + waterOk*0.2) : 0;
+}
+
+// ─── RESET ───────────────────────────────────────────────────
+function showResetDialog() { document.getElementById('overlay').classList.add('show'); }
+function closeDialog() { document.getElementById('overlay').classList.remove('show'); }
+function resetDay() {
+  state = freshState();
+  saveState();
+  renderAllMeals();
+  renderWater();
+  renderGoals();
+  closeDialog();
+  showNotif('🔄','Dia resetado!');
+}
+
+// ─── NAV ─────────────────────────────────────────────────────
+function switchNav(v) {
+  document.querySelectorAll('.view').forEach(el => el.style.display='none');
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('view' + v.charAt(0).toUpperCase()+v.slice(1)).style.display='block';
+  document.getElementById('nav-' + v).classList.add('active');
+  if(v === 'week') renderWeekView();
+}
+
+function renderWeekView() {
+  renderWeekGrid('weekGrid2');
+  const keys = getWeekKeys();
+  const details = document.getElementById('weekDetails');
+  details.innerHTML = '';
+  keys.forEach(k => {
+    const parts = k.split('-');
+    const d = new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+    const s = loadState(k);
+    const score = Math.round(getDayScore(s)*100);
+    const card = document.createElement('div');
+    card.className = 'weekly-card';
+    card.style.marginBottom = '12px';
+    const water = s.water||0;
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-weight:600">${DAYS[d.getDay()]}, ${d.getDate()}</span>
+        <span style="color:var(--accent);font-weight:700">${score}%</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${MEALS.map(m=>{
+          const items = m==='dinner'?DINNER_OPTS[s.dinnerOpt||0]:MEAL_ITEMS[m];
+          const c = Object.values(s.meals?.[m]||{}).filter(Boolean).length;
+          return `<span style="font-size:12px;background:var(--surface2);border-radius:6px;padding:3px 8px;color:${c===items.length?'var(--accent)':'var(--text-muted)'}">${mealName(m)} ${c}/${items.length}</span>`;
+        }).join('')}
+        <span style="font-size:12px;background:var(--surface2);border-radius:6px;padding:3px 8px;color:${water>=WATER_GOAL?'var(--water)':'var(--text-muted)'}">💧${water>=1000?(water/1000).toFixed(1)+'L':water+'ml'}</span>
+      </div>`;
+    details.appendChild(card);
+  });
+}
+
+function mealName(m) {
+  const n={breakfast:'☀️',lunch:'🍽️',snack:'🍎',preworkout:'💪',dinner:'🌙'};
+  return n[m]||m;
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────
+function showNotif(icon, text) {
+  const b = document.getElementById('notifBanner');
+  document.getElementById('notifIcon').textContent = icon;
+  document.getElementById('notifText').textContent = text;
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 3000);
+}
+
+const MEAL_TIMES = [
+  {h:8,m:0,icon:'🌅',text:'Hora do café da manhã!'},
+  {h:12,m:0,icon:'🍽️',text:'Hora do almoço!'},
+  {h:16,m:0,icon:'🍎',text:'Hora do lanche da tarde!'},
+  {h:18,m:0,icon:'💪',text:'Hora do pré-treino!'},
+  {h:20,m:30,icon:'🌙',text:'Hora do jantar!'}
+];
+
+function scheduleReminders() {
+  if(!('Notification' in window)) return;
+  Notification.requestPermission();
+  setInterval(() => {
+    const now = new Date();
+    MEAL_TIMES.forEach(t => {
+      if(now.getHours()===t.h && now.getMinutes()===t.m && now.getSeconds()<5) {
+        showNotif(t.icon, t.text);
+        if(Notification.permission==='granted') {
+          new Notification('NutriDay 🥗', { body: t.text, icon: '' });
+        }
+      }
+    });
+  }, 5000);
+}
+
+// ─── START ───────────────────────────────────────────────────
+init();
+
+// Register SW for PWA
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // Inline SW registration for single-file app
+    const swCode = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => clients.claim());
+self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(()=>new Response('offline'))));
+`;
+    const blob = new Blob([swCode], {type:'application/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
